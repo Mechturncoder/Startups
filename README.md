@@ -28,7 +28,7 @@ This script automates the process of:
 - Logging the output of each query into separate text files.
 - Handling common errors during execution.
 
-### 2. `hive_queries.hql`
+### 2. `ListOfStartup.hive`
 
 This file contains the following queries:
 - **Loading data into Hive**: Create tables, load data from CSV files into Hive tables, and insert data into external tables.
@@ -41,8 +41,3 @@ Ensure the following:
 - Place your `Listofstartups.csv` file in the appropriate directory on the local file system.
 - Update the paths to the CSV files in the Hive query script, if necessary.
 - Set up your Hive Metastore and HDFS configuration.
-
-### Step 2: Upload Files to GitHub
-1. Clone this repository to your local machine:
-   ```bash
-   git clone https://github.com/yourusername/hive-automation.git
