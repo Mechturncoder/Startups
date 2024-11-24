@@ -1,0 +1,89 @@
+-- Drop the table if it already exists and create it again
+DROP TABLE IF EXISTS Startups_data;
+
+-- Create a managed table Startups_data
+CREATE TABLE Startups_data(
+    incubation_center STRING, 
+    name_of_startup STRING,
+    location_of_company STRING,
+    sector STRING
+) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+    'separatorChar' = ',',  
+    'quoteChar' = '"'   
+);
+
+-- Create an external table Startups with a specified location
+CREATE EXTERNAL TABLE IF NOT EXISTS Startups(
+    incubation_center STRING, 
+    name_of_startup STRING,
+    location_of_company STRING,
+    sector STRING
+) 
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+    'separatorChar' = ',', 
+    'quoteChar' = '"' 
+)
+LOCATION '/user/cloudera/startup_data'
+TBLPROPERTIES ('skip.header.line.count'='1'); -- Skip the first line while loading data
+
+-- Load data into the managed table Startups_data
+LOAD DATA LOCAL INPATH './Listofstartups.csv' INTO TABLE Startups_data;
+
+-- Insert data from Startups_data into the external table Startups
+INSERT OVERWRITE TABLE Startups 
+SELECT * 
+FROM Startups_data;
+
+-- Query 1: Maximum number of startups from a sector
+!echo "-------------------------------------------------------------------------------------------";
+!echo "Max Startups from Sector";
+!echo "-------------------------------------------------------------------------------------------";
+SELECT 
+    LOWER(TRIM(sector)) AS sector,
+    COUNT(*) AS max_no_startup 
+FROM Startups 
+GROUP BY LOWER(TRIM(sector)) 
+ORDER BY max_no_startup DESC 
+LIMIT 1;
+
+-- Query 2: Maximum count of startups in a state
+!echo "-------------------------------------------------------------------------------------------";
+!echo "Maximum count of Startups in state";
+!echo "-------------------------------------------------------------------------------------------";
+SELECT 
+    LOWER(COALESCE(TRIM(SPLIT(location_of_company, ',')[1]), TRIM(location_of_company))) AS state, -- Extract state or fallback to location
+    COUNT(*) AS no_of_startup 
+FROM Startups 
+GROUP BY LOWER(COALESCE(TRIM(SPLIT(location_of_company, ',')[1]), TRIM(location_of_company))) 
+ORDER BY no_of_startup DESC 
+LIMIT 1;
+
+-- Query 3: Total number of startups from Maharashtra
+!echo "-------------------------------------------------------------------------------------------";
+!echo "Startup from Maharashtra";
+!echo "-------------------------------------------------------------------------------------------";
+SELECT 
+    COUNT(*) AS startups_in_maharashtra
+FROM (
+    SELECT 
+        CASE 
+            WHEN INSTR(location_of_company, ',') > 0 THEN 
+                LOWER(TRIM(SUBSTR(location_of_company, INSTR(location_of_company, ',') + 1))) -- Extract state
+            ELSE 
+                LOWER(TRIM(location_of_company)) -- Use the location directly if no comma is found
+        END AS state
+    FROM Startups
+) subquery
+WHERE state = 'maharashtra';
+
+-- Query 4: Total number of startups in the healthcare sector
+!echo "-------------------------------------------------------------------------------------------";
+!echo "Total Startup in Healthcare";
+!echo "-------------------------------------------------------------------------------------------";
+SELECT 
+    COUNT(*) AS startups_in_healthcare
+FROM Startups
+WHERE LOWER(TRIM(sector)) = 'healthcare';
