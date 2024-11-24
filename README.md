@@ -1,4 +1,13 @@
 # Hive Automation and Queries
+##Overview
+This repository contains automation scripts and Hive queries designed to process and analyze startup data. It automates the process of loading data into Hive tables, running queries to analyze the data, and storing the results in text files. The main components of the repository are:
+
+Hive Query Script: A collection of Hive queries for loading data into Hive and performing data analysis.
+Automation Shell Script: Automates the process of executing the Hive queries and saves the output in a specified format.
+This project is useful for:
+
+Automating data loading and querying tasks in Hive.
+Performing aggregations and analysis on startup data, such as counting the number of startups by sector or state.
 
 This repository contains two main components:
 
